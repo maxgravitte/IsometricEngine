@@ -1,0 +1,116 @@
+package environment;
+
+import java.util.Random;
+
+import org.lwjgl.opengl.GL11;
+
+public class World {
+	private int sx =20;
+	private int sy =20; 
+	private int[][] map;
+	int count =1;
+	
+	static Tile grass = new Tile("grass");
+    static Tile water = new Tile("water");
+    static Tile flowers = new Tile("flowers");
+    static Tile soil = new Tile("soil");
+    static Tile open = new Tile("open");
+    static Tile error = new Tile("error");
+    static Tile rock = new Tile("rock");
+    static Tile gravel = new Tile("gravel");
+    
+    
+	public World(int x, int y)
+    {  
+        Random r = new Random();
+        
+        map = new int[x][y];
+        
+        for(int i=0;i<x;i++)
+        {
+            for(int j=0;j<y;j++)
+            {   
+                int b = r.nextInt(1000); 
+                if(b<50)
+                    map[i][j]=4;    
+                if(b>=50 && b<60)
+                    map[i][j]=1;
+                else
+                    map[i][j]=0;                
+            }
+        }
+        while(count<10)
+        {
+            for(int i=0;i<x;i++)//generate lakes
+            {
+                for(int j=0;j<y;j++)
+                {                   
+                    if(map[i][j]==1)
+                    {
+                        if(r.nextInt(10)==1 && i<19)
+                            map[i+1][j]=1;
+                        if(r.nextInt(10)==1 && i>0)
+                            map[i-1][j]=1;    
+                                                   
+                        if(r.nextInt(10)==1 && j<19)
+                            map[i][j+1]=1;
+                        if(r.nextInt(10)==1 && j>0)
+                            map[i][j-1]=1;                        
+                    }                              
+                }
+            }
+            count++;
+        }
+        for(int i=1;i<x-1;i++)//generate lakes
+            {
+                for(int j=1;j<y-1;j++)
+                {        
+                    if(map[i][j]!=1)
+                    {
+                        if(map[i+1][j+1]==1 || map[i-1][j-1]==1)
+                        {
+                               map[i][j]=5;                   
+                        }    
+                    }
+                }
+            }
+        sx=x;
+        sy=y;
+        
+    } 
+	public void draw()
+    {
+        for(int i=sx-1;i>=0;i--)//X values
+        {
+            for(int j=0;j<sy;j++)//Y Values
+            {
+                if(map[j][i]==0)
+                    grass.getTex().bind();
+                if(map[j][i]==1)
+                    water.getTex().bind();
+                if(map[j][i]==2)
+                    flowers.getTex().bind();
+                if(map[j][i]==3)
+                    soil.getTex().bind();
+                if(map[j][i]==4)
+                    rock.getTex().bind();
+                if(map[j][i]==5)
+                    gravel.getTex().bind();
+                int x = 16*i + 16*j;
+                int y = (8*j) - (8*i) + (sx/2)*16;
+                
+                GL11.glBegin(GL11.GL_QUADS);
+                    GL11.glTexCoord2f(0,0);
+                    GL11.glVertex2f(x,y);
+                    GL11.glTexCoord2f(1,0);
+                    GL11.glVertex2f(x+grass.getTex().getTextureWidth(),y);
+                    GL11.glTexCoord2f(1,1);
+                    GL11.glVertex2f(x+grass.getTex().getTextureWidth(),y+grass.getTex().getTextureHeight());
+                    GL11.glTexCoord2f(0,1);
+                    GL11.glVertex2f(x,y+grass.getTex().getTextureHeight());
+                GL11.glEnd();
+            
+            }
+        }   
+    }
+}
